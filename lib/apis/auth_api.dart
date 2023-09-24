@@ -20,12 +20,32 @@ abstract class IAuthAPI {
     required String email,
     required String password,
   });
+  FutureEither<model.Session> login({
+    required String email,
+    required String password,
+  });
+  Future<model.Account?> currentUserAccount();
 }
 
 class AuthAPI implements IAuthAPI {
   final Account _account; //private variable
   //this is a service account variable not model account
   AuthAPI({required Account account}) : _account = account;
+
+  @override
+  //!if _account.get() doesn't have any value that means a user is not logged in
+  //!maybe signed up but not logged in so we will return null in that case
+  //!this is for persisting login state even after app restart
+  Future<model.Account?> currentUserAccount() async {
+    //we will use Future Provider for this
+    try {
+      return await _account.get();
+    } on AppwriteException catch (e) {
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   FutureEither<model.Account> signUp({
@@ -48,6 +68,25 @@ class AuthAPI implements IAuthAPI {
       return left(
         Failure(e.toString(), stackTrace),
       );
+    }
+  }
+
+  @override
+  FutureEither<model.Session> login({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final session = await _account.createEmailSession(
+        email: email,
+        password: password,
+      );
+      return right(session);
+    } on AppwriteException catch (e, stackTrace) {
+      return left(
+          Failure(e.message ?? "Some unexpected error occurred.", stackTrace));
+    } catch (e, stackTrace) {
+      return left(Failure(e.toString(), stackTrace));
     }
   }
 }
