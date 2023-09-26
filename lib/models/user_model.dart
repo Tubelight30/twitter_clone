@@ -64,7 +64,6 @@ class UserModel {
     result.addAll({'bannerPic': bannerPic});
     result.addAll({'bio': bio});
     result.addAll({'isTwitterBlue': isTwitterBlue});
-
     return result;
   }
 
@@ -88,33 +87,33 @@ class UserModel {
   String toString() {
     return 'UserModel(email: $email, name: $name, followers: $followers, following: $following, profilePic: $profilePic, bannerPic: $bannerPic, uid: $uid, bio: $bio, isTwitterBlue: $isTwitterBlue)';
   }
+  //we wont be using this in our application
+  // @override
+  // bool operator ==(Object other) {
+  //   if (identical(this, other)) return true;
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+  //   return other is UserModel &&
+  //       other.email == email &&
+  //       other.name == name &&
+  //       other.followers == followers &&
+  //       listEquals(other.following, following) &&
+  //       other.profilePic == profilePic &&
+  //       other.bannerPic == bannerPic &&
+  //       other.uid == uid &&
+  //       other.bio == bio &&
+  //       other.isTwitterBlue == isTwitterBlue;
+  // }
 
-    return other is UserModel &&
-        other.email == email &&
-        other.name == name &&
-        other.followers == followers &&
-        listEquals(other.following, following) &&
-        other.profilePic == profilePic &&
-        other.bannerPic == bannerPic &&
-        other.uid == uid &&
-        other.bio == bio &&
-        other.isTwitterBlue == isTwitterBlue;
-  }
-
-  @override
-  int get hashCode {
-    return email.hashCode ^
-        name.hashCode ^
-        followers.hashCode ^
-        following.hashCode ^
-        profilePic.hashCode ^
-        bannerPic.hashCode ^
-        uid.hashCode ^
-        bio.hashCode ^
-        isTwitterBlue.hashCode;
-  }
+  // @override
+  // int get hashCode {
+  //   return email.hashCode ^
+  //       name.hashCode ^
+  //       followers.hashCode ^
+  //       following.hashCode ^
+  //       profilePic.hashCode ^
+  //       bannerPic.hashCode ^
+  //       uid.hashCode ^
+  //       bio.hashCode ^
+  //       isTwitterBlue.hashCode;
+  // }
 }
