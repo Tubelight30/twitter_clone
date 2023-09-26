@@ -31,7 +31,7 @@ class UserModel {
   UserModel copyWith({
     String? email,
     String? name,
-    //!list? followers,
+    List<String>? followers,
     List<String>? following,
     String? profilePic,
     String? bannerPic,
