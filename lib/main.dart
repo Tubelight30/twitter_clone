@@ -19,7 +19,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'Twitter Clone',
+      title: 'Flutter ',
       theme: AppTheme.theme,
       home: ref.watch(currentUserAccountProvider).when(
             data: (user) {
