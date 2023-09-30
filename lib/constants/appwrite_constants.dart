@@ -4,4 +4,5 @@ class AppwriteConstants {
   static const String endPoint =
       'http://192.168.151.196:80/v1'; //this helps flutter communicate with appwrite
   static const String usersCollection = '651238192ad37ed98e84';
+  static const String tweetsCollection = '65185f7f1adbc9bcdea7';
 }
