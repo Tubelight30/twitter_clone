@@ -8,5 +8,5 @@ class AppwriteConstants {
   static const String imagesBucket = '651ae8155e91cec899e8';
 
   static String imageUrl(String imageId) =>
-      '$endPoint/v1/storage/buckets/$imagesBucket/files/$imageId/view?project=$projectId&mode=admin';
+      'http://192.168.151.196:80/v1/storage/buckets/$imagesBucket/files/$imageId/view?project=$projectId&mode=admin';
 }

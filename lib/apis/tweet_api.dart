@@ -10,17 +10,22 @@ import 'package:twitter_clone/models/tweet_model.dart';
 final tweetAPIProvider = Provider((ref) {
   return TweetAPI(
     db: ref.watch(appwriteDatabaseProvider),
+    realtime: ref.watch(appwriteRealtimeProvider),
   );
 });
 
 abstract class ITweetAPI {
   FutureEither<Document> shareTweet(Tweet tweet);
   Future<List<Document>> getTweets();
+  Stream<RealtimeMessage> getLatestTweet();
 }
 
 class TweetAPI implements ITweetAPI {
   final Databases _db;
-  TweetAPI({required Databases db}) : _db = db;
+  final Realtime _realtime;
+  TweetAPI({required Databases db, required Realtime realtime})
+      : _db = db,
+        _realtime = realtime;
   @override
   FutureEither<Document> shareTweet(Tweet tweet) async {
     try {
@@ -54,8 +59,23 @@ class TweetAPI implements ITweetAPI {
     final documents = await _db.listDocuments(
       databaseId: AppwriteConstants.databaseId,
       collectionId: AppwriteConstants.tweetsCollection,
+      queries: [
+        Query.orderDesc('tweetedAt'),
+      ],
     );
+
     //!we have to convert DocumentList datatype to List<Document>
     return documents.documents;
+  }
+
+  @override
+  Stream<RealtimeMessage> getLatestTweet() {
+    //when we do .subscribe() we get RealtimeSubscription
+    //so we have to convert it to Stream<RealtimeMessage> by doing .stream
+    //we will use realtime for database changes so if any changes happen in database
+    //we subscribe to tweet collection in database and track document changes.
+    return _realtime.subscribe([
+      'databases.${AppwriteConstants.databaseId}.collections.${AppwriteConstants.tweetsCollection}.documents'
+    ]).stream;
   }
 }
