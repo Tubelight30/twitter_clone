@@ -8,6 +8,7 @@ import 'package:twitter_clone/core/enums/tweet_type_enum.dart';
 import 'package:twitter_clone/core/utils.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
 import 'package:twitter_clone/models/tweet_model.dart';
+import 'package:twitter_clone/models/user_model.dart';
 
 final tweetControllerProvider = StateNotifierProvider<TweetController, bool>(
   (ref) {
@@ -48,6 +49,27 @@ class TweetController extends StateNotifier<bool> {
     //now this this is a List<Document> we convert it to List<Tweet>
     //
     return tweetList.map((tweet) => Tweet.fromMap(tweet.data)).toList();
+  }
+
+  void likeTweet(Tweet tweet, UserModel user) async {
+    List<String> likes = tweet.likes;
+    //likes is an array in database as it contains user ids of all the users who have liked the tweet
+    //if the user has not liked the tweet then we add the user id to the likes array
+    //if the user has liked the tweet then we remove the user id from the likes array
+    if (tweet.likes.contains(user.uid)) {
+      likes.remove(user.uid);
+    } else {
+      likes.add(user.uid);
+    }
+    //as the likes array has been updated we need to update the tweet model with the new likes array
+    tweet = tweet.copyWith(likes: likes);
+
+    //now we need to update the tweet in the database so we pass the updated tweet model to the func.
+    final res = await _tweetAPI.likeTweet(tweet);
+    res.fold(
+        (l) => null,
+        (r) =>
+            null); //we dont want to do anything with the response no error and no success msg.
   }
 
   void shareTweet({
