@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_clone/apis/storage_api.dart';
@@ -72,6 +73,32 @@ class TweetController extends StateNotifier<bool> {
             null); //we dont want to do anything with the response no error and no success msg.
   }
 
+  void reshareTweet(
+      Tweet tweet, UserModel currentUser, BuildContext context) async {
+    tweet = tweet.copyWith(
+      retweetedBy: currentUser.name,
+      likes: [],
+      commentsIds: [],
+      resharedCount: tweet.resharedCount + 1,
+    );
+    final res = await _tweetAPI.updateReshareCount(tweet);
+    res.fold(
+      (l) => showSnackBar(context, l.message),
+      (r) async {
+        tweet = tweet.copyWith(
+          id: ID.unique(),
+          resharedCount: 0,
+          tweetedAt: DateTime.now(),
+        );
+        final res2 = await _tweetAPI.shareTweet(tweet);
+        res2.fold(
+          (l) => showSnackBar(context, l.message),
+          (r) => showSnackBar(context, 'Retweeted'),
+        );
+      },
+    );
+  }
+
   void shareTweet({
     required List<File> images, //will be empty list if no images are selected
     required String text, //will be empty string if no text is entered
@@ -120,6 +147,7 @@ class TweetController extends StateNotifier<bool> {
       commentsIds: const [],
       id: '',
       resharedCount: 0,
+      retweetedBy: '',
     );
     final res = await _tweetAPI.shareTweet(tweet);
     state = false; //isLoading = false
@@ -146,6 +174,7 @@ class TweetController extends StateNotifier<bool> {
       commentsIds: const [],
       id: '',
       resharedCount: 0,
+      retweetedBy: '',
     );
     final res = await _tweetAPI.shareTweet(tweet);
     state = false; //isLoading = false
