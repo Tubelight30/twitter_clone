@@ -21,6 +21,11 @@ final tweetControllerProvider = StateNotifierProvider<TweetController, bool>(
   },
 );
 
+final getRepliesToTweetsProvider = FutureProvider.family((ref, Tweet tweet) {
+  final tweetController = ref.watch(tweetControllerProvider.notifier);
+  return tweetController.getRepliesToTweet(tweet);
+});
+
 final getTweetsProvider = FutureProvider((ref) {
   final tweetController = ref.watch(tweetControllerProvider.notifier);
   return tweetController.getTweets();
@@ -103,6 +108,7 @@ class TweetController extends StateNotifier<bool> {
     required List<File> images, //will be empty list if no images are selected
     required String text, //will be empty string if no text is entered
     required BuildContext context,
+    required String repliedTo,
   }) {
     //!text is absolutely necessary bcz we cannot tweet without text
     if (text.isEmpty) {
@@ -115,13 +121,20 @@ class TweetController extends StateNotifier<bool> {
         images: images,
         text: text,
         context: context,
+        repliedTo: repliedTo,
       );
     } else {
       _shareTextTweet(
         text: text,
         context: context,
+        repliedTo: repliedTo,
       );
     }
+  }
+
+  Future<List<Tweet>> getRepliesToTweet(Tweet tweet) async {
+    final documents = await _tweetAPI.getRepliesToTweet(tweet);
+    return documents.map((tweet) => Tweet.fromMap(tweet.data)).toList();
   }
 
   //!both these functions are private bcz we dont want to expose them outside of the controller
@@ -129,6 +142,7 @@ class TweetController extends StateNotifier<bool> {
     required List<File> images,
     required String text,
     required BuildContext context,
+    required String repliedTo, //will have the id of the tweet that user posted.
   }) async {
     state = true; //isLoading = true
     final hashtags = _getHashTagsFromText(text);
@@ -148,6 +162,7 @@ class TweetController extends StateNotifier<bool> {
       id: '',
       resharedCount: 0,
       retweetedBy: '',
+      repliedTo: repliedTo,
     );
     final res = await _tweetAPI.shareTweet(tweet);
     state = false; //isLoading = false
@@ -157,6 +172,7 @@ class TweetController extends StateNotifier<bool> {
   void _shareTextTweet({
     required String text,
     required BuildContext context,
+    required String repliedTo,
   }) async {
     state = true; //isLoading = true
     final hashtags = _getHashTagsFromText(text);
@@ -175,6 +191,7 @@ class TweetController extends StateNotifier<bool> {
       id: '',
       resharedCount: 0,
       retweetedBy: '',
+      repliedTo: repliedTo,
     );
     final res = await _tweetAPI.shareTweet(tweet);
     state = false; //isLoading = false
