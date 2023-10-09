@@ -97,7 +97,10 @@ class Tweet {
       tweetedAt: DateTime.fromMillisecondsSinceEpoch(map['tweetedAt']),
       likes: List<String>.from(map['likes']),
       commentsIds: List<String>.from(map['commentsIds']),
-      id: map['\$id'] ?? '',
+      id: map['\$id'] ??
+          '', //this will retrieve the auto generated id of the user by appwrite.
+      //! this '\$id' is a special key in appwrite which is used to retrieve the auto generated id of the tweet
+      //! there are many other special keys like '\$collection' which is used to retrieve the collection name
       resharedCount: map['resharedCount']?.toInt() ?? 0,
       retweetedBy: map['retweetedBy'] ?? '',
       repliedTo: map['repliedTo'] ?? '',

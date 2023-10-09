@@ -78,6 +78,8 @@ class UserModel {
       bannerPic: map['bannerPic'] ?? '',
       uid: map['\$id'] ??
           '', //this will retrieve the auto generated id of the user by appwrite.
+      //!this '\$id' is a special key in appwrite which is used to retrieve the auto generated id of the user
+      //!there are many other special keys like '\$collection' which is used to retrieve the collection name
       bio: map['bio'] ?? '',
       isTwitterBlue: map['isTwitterBlue'] ?? false,
     );
