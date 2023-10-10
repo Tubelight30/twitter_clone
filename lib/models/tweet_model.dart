@@ -69,7 +69,6 @@ class Tweet {
 
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
-
     result.addAll({'text': text});
     result.addAll({'hashtags': hashtags});
     result.addAll({'link': link});

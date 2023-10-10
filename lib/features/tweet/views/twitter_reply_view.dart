@@ -40,6 +40,7 @@ class TwitterReplyScreen extends ConsumerWidget {
                           }
                           if (!isTweetAlreadyPresent &&
                               latestTweet.repliedTo == tweet.id) {
+                            //if tweet is not present in the list and it is a reply to the tweet
                             if (data.events.contains(
                               'databases.*.collections.${AppwriteConstants.tweetsCollection}.documents.*.create',
                             )) {

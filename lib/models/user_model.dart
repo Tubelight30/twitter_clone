@@ -55,7 +55,6 @@ class UserModel {
   //!when we have a UserModel Created and we call user.toMap() it will return a map of all the fields
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
-
     result.addAll({'email': email});
     result.addAll({'name': name});
     result.addAll({'followers': followers});
