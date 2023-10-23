@@ -30,7 +30,8 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appbar,
+      //we want to show appbar only on the first page
+      appBar: _page == 0 ? appbar : null,
       body: IndexedStack(
         index: _page,
         children: UIConstants.bottomTabBarPages,
