@@ -15,7 +15,7 @@ final searchUserProvider = FutureProvider.family((ref, String name) async {
 
 class ExploreController extends StateNotifier<bool> {
   final UserAPI _userAPI;
-  ExploreController({required userAPI})
+  ExploreController({required UserAPI userAPI})
       : _userAPI = userAPI,
         super(false);
 
