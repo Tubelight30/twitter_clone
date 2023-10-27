@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_clone/common/common.dart';
+import 'package:twitter_clone/constants/constants.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
+import 'package:twitter_clone/features/tweet/controller/tweet_controller.dart';
 import 'package:twitter_clone/features/tweet/widgets/tweet_card.dart';
 import 'package:twitter_clone/features/user_profile/controller/user_profile_controller.dart';
 import 'package:twitter_clone/features/user_profile/view/edit_profile_view.dart';
 import 'package:twitter_clone/features/user_profile/widget/follow_count.dart';
+import 'package:twitter_clone/models/tweet_model.dart';
 import 'package:twitter_clone/models/user_model.dart';
 import 'package:twitter_clone/theme/theme.dart';
 
@@ -51,7 +54,15 @@ class UserProfile extends ConsumerWidget {
                         child: OutlinedButton(
                           onPressed: () {
                             if (currentUser.uid == user.uid) {
+                              //edit profile
                               Navigator.push(context, EditProfileView.route());
+                            } else {
+                              ref
+                                  .read(userProfileControllerProvider.notifier)
+                                  .followUser(
+                                      user: user,
+                                      context: context,
+                                      currentUser: currentUser);
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -67,7 +78,9 @@ class UserProfile extends ConsumerWidget {
                           child: Text(
                             currentUser.uid == user.uid
                                 ? 'Edit Profile'
-                                : 'Follow',
+                                : currentUser.following.contains(user.uid)
+                                    ? 'UnFollow'
+                                    : 'Follow',
                             style: const TextStyle(
                               color: Pallete.whiteColor,
                             ),
@@ -128,15 +141,75 @@ class UserProfile extends ConsumerWidget {
             },
             body: ref.watch(getUserTweetsProvider(user.uid)).when(
                   data: (tweets) {
-                    //can make it realtime by copying code from twitter_reply_view.dart
-                    return ListView.builder(
-                        itemCount: tweets.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final tweet = tweets[index];
-                          return TweetCard(
-                            tweet: tweet,
-                          );
-                        });
+                    return ref.watch(getLatestTweetProvider).when(
+                          data: (data) {
+                            final latestTweet = Tweet.fromMap(data.payload);
+                            bool isTweetAlreadyPresent = false;
+                            for (final tweetModel in tweets) {
+                              if (tweetModel.id == latestTweet.id) {
+                                isTweetAlreadyPresent = true;
+                                break;
+                              }
+                            }
+                            if (!isTweetAlreadyPresent) {
+                              //if tweet is not present in the list and it is a reply to the tweet
+                              if (data.events.contains(
+                                'databases.*.collections.${AppwriteConstants.tweetsCollection}.documents.*.create',
+                              )) {
+                                tweets.insert(
+                                  0,
+                                  Tweet.fromMap(data.payload),
+                                );
+                              } else if (data.events.contains(
+                                'databases.*.collections.${AppwriteConstants.tweetsCollection}.documents.*.update',
+                              )) {
+                                //get id of the original tweet
+                                final startingPoint =
+                                    data.events[0].lastIndexOf('documents.');
+                                final endPoint =
+                                    data.events[0].lastIndexOf('.update');
+                                final tweetId = data.events[0]
+                                    .substring(startingPoint + 10, endPoint);
+                                //getting the original tweet from database using the tweet id
+                                var tweet = tweets
+                                    .where((element) => element.id == tweetId)
+                                    .first;
+                                //getting the index of the original tweet
+                                final tweetIndex = tweets.indexOf(tweet);
+                                tweets.removeWhere(
+                                    (element) => element.id == tweetId);
+
+                                //getting the updated tweet from payload
+                                tweet = Tweet.fromMap(data.payload);
+                                tweets.insert(tweetIndex, tweet);
+                              }
+                            }
+                            return Expanded(
+                              child: ListView.builder(
+                                //!listview builder has tendency to take up entire screen it is not getting entire screen here so we wrap with expanded so it gets all the available space
+                                itemCount: tweets.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  final tweet = tweets[index];
+                                  return TweetCard(tweet: tweet);
+                                },
+                              ),
+                            );
+                          },
+                          error: (error, stackTrace) => ErrorText(
+                            error: error.toString(),
+                          ),
+                          loading: () {
+                            return Expanded(
+                              child: ListView.builder(
+                                itemCount: tweets.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  final tweet = tweets[index];
+                                  return TweetCard(tweet: tweet);
+                                },
+                              ),
+                            );
+                          },
+                        );
                   },
                   error: (error, st) => ErrorText(
                     error: error.toString(),
